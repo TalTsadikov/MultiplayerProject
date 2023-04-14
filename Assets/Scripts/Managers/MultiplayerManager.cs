@@ -17,8 +17,8 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
     [SerializeField] private TMP_InputField nicknameInputField;
     
     [Header("Room Controls")]
+    [SerializeField] private TMP_InputField roomNameInputField;
     [SerializeField] private Button createRoomButton;
-    [SerializeField] private string roomNameToCreate;
     [SerializeField] private Button leaveRoomButton;
     [SerializeField] private Button startGameButton;
     [SerializeField] private Button connectToRoomButton;
@@ -30,7 +30,7 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
     [SerializeField] private TextMeshProUGUI currentRoomPlayersCountTextUI;
     [SerializeField] private TextMeshProUGUI playerListText;
     [SerializeField] private TextMeshProUGUI roomsListText;
-    [SerializeField] private TextMeshProUGUI roomsInLobbyText;
+    [SerializeField] private TextMeshProUGUI roomNameError;
     
     public void LoginToPhoton()
     {
@@ -61,15 +61,32 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
                 Debug.Log("Room " + roomInfo.Name + " No longer exist");
             }
         }
-
-        RoomListInfo(roomList);
     }
 
     public void CreateRoom()
     {
         createRoomButton.interactable = false;
-        PhotonNetwork.JoinOrCreateRoom(roomNameToCreate, new RoomOptions(){MaxPlayers = 20, EmptyRoomTtl = 0},
-            null );
+        PhotonNetwork.CreateRoom(roomNameInputField.text, new RoomOptions() { MaxPlayers = 20, EmptyRoomTtl = 0 }, null);
+
+      //  if (!CheckRoomName(roomNameInputField.text))
+      //  else
+      //      roomNameError.text = "room name taken or invalid";
+    }
+
+    private bool CheckRoomName(string roomName)
+    {
+       List<RoomInfo> roomList;
+       roomList = GetComponent<List<RoomInfo>>();
+        bool roomNameExist = false;
+        foreach (RoomInfo roomInfo in roomList)
+        {
+            if (roomName == roomInfo.Name || roomName == string.Empty)
+                roomNameExist = true;
+            else
+                roomNameExist = false;
+        }
+        
+        return roomNameExist;
     }
 
     public void LeaveRoom()
@@ -184,17 +201,6 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
         {
             currentRoomNameDebugTextUI.text = string.Empty;
             currentRoomPlayersCountTextUI.text = string.Empty;
-        }
-    }
-
-    private void RoomListInfo(List<RoomInfo> roomList)
-    {
-        foreach (var roomInfo in roomList)
-        {
-            if (!roomInfo.RemovedFromList)
-                roomsInLobbyText.text = ($" Room: {roomInfo.Name} Players: {string.Format(CURRENT_ROOM_PLAYERS_PATTERN,  roomInfo.PlayerCount, roomInfo.MaxPlayers)}") + Environment.NewLine;
-            else
-                return;
         }
     }
 }

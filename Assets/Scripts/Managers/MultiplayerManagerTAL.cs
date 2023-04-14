@@ -30,6 +30,7 @@ public class MultiplayerManagerTAL : MonoBehaviourPunCallbacks
     [SerializeField] private TextMeshProUGUI currentRoomPlayersCountTextUI;
     [SerializeField] private TextMeshProUGUI playerListText;
     [SerializeField] private TextMeshProUGUI roomsListText;
+    [SerializeField] private TextMeshProUGUI roomsInLobbyText;
 
     public void LoginToPhoton()
     {
@@ -182,6 +183,17 @@ public class MultiplayerManagerTAL : MonoBehaviourPunCallbacks
         {
             currentRoomNameDebugTextUI.text = string.Empty;
             currentRoomPlayersCountTextUI.text = string.Empty;
+        }
+    }
+
+    private void RoomListInfo(List<RoomInfo> roomList)
+    {
+        foreach (var roomInfo in roomList)
+        {
+            if (!roomInfo.RemovedFromList)
+                roomsInLobbyText.text = ($" Room: {roomInfo.Name} Players: {string.Format(CURRENT_ROOM_PLAYERS_PATTERN, roomInfo.PlayerCount, roomInfo.MaxPlayers)}") + Environment.NewLine;
+            else
+                return;
         }
     }
 }
