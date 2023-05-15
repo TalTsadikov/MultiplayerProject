@@ -3292,17 +3292,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nicknameInputField: {fileID: 1944896977}
+  roomNameInputField: {fileID: 0}
   createRoomButton: {fileID: 1749113437}
-  roomNameToCreate: Test
+  joinRoomButton: {fileID: 0}
   leaveRoomButton: {fileID: 1784338345}
   startGameButton: {fileID: 907836613}
-  connectToRoomButton: {fileID: 1076449665}
+  connectToLobbyButton: {fileID: 0}
   serverDebugTextUI: {fileID: 306076097}
   isConnectedToRoomDebugTextUI: {fileID: 1236678968}
   currentRoomNameDebugTextUI: {fileID: 552084887}
   currentRoomPlayersCountTextUI: {fileID: 403203359}
   playerListText: {fileID: 1158975213}
   roomsListText: {fileID: 282269605}
+  roomNameError: {fileID: 0}
 --- !u!1 &2058822008
 GameObject:
   m_ObjectHideFlags: 0

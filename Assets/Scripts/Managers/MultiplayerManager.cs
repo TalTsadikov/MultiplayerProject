@@ -19,10 +19,12 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
     [Header("Room Controls")]
     [SerializeField] private TMP_InputField roomNameInputField;
     [SerializeField] private Button createRoomButton;
+    [SerializeField] private Button joinRoomButton;
     [SerializeField] private Button leaveRoomButton;
     [SerializeField] private Button startGameButton;
-    [SerializeField] private Button connectToRoomButton;
-    
+    [SerializeField] private Button connectToLobbyButton;
+    private List<string> roomNamesList = new List<string>();
+
     [Header("Debug Texts")]
     [SerializeField] private TextMeshProUGUI serverDebugTextUI;
     [SerializeField] private TextMeshProUGUI isConnectedToRoomDebugTextUI;
@@ -30,7 +32,6 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
     [SerializeField] private TextMeshProUGUI currentRoomPlayersCountTextUI;
     [SerializeField] private TextMeshProUGUI playerListText;
     [SerializeField] private TextMeshProUGUI roomsListText;
-    [SerializeField] private TextMeshProUGUI roomNameError;
     
     public void LoginToPhoton()
     {
@@ -51,11 +52,13 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
     {
         Debug.Log("Got room list");
         base.OnRoomListUpdate(roomList);
-       //  roomsListText.text = string.Empty;
+
         foreach (RoomInfo roomInfo in roomList)
         {
+            roomNamesList.Add(roomInfo.Name);
+
             if (!roomInfo.RemovedFromList)
-                roomsListText.text += roomInfo.Name + Environment.NewLine;
+                roomsListText.text += ($"Room: {roomInfo.Name} {roomInfo.PlayerCount}/{roomInfo.MaxPlayers}") + Environment.NewLine;
             else
             {
                 Debug.Log("Room " + roomInfo.Name + " No longer exist");
@@ -67,26 +70,30 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
     {
         createRoomButton.interactable = false;
         PhotonNetwork.CreateRoom(roomNameInputField.text, new RoomOptions() { MaxPlayers = 20, EmptyRoomTtl = 0 }, null);
-
-      //  if (!CheckRoomName(roomNameInputField.text))
-      //  else
-      //      roomNameError.text = "room name taken or invalid";
     }
 
-    private bool CheckRoomName(string roomName)
+    public void JoinRoom()
     {
-       List<RoomInfo> roomList;
-       roomList = GetComponent<List<RoomInfo>>();
-        bool roomNameExist = false;
-        foreach (RoomInfo roomInfo in roomList)
+        PhotonNetwork.JoinRoom(roomNameInputField.text);
+        joinRoomButton.interactable = false;
+    }
+
+    private void CheckRoomName(string roomName)
+    {
+
+        foreach (var name in roomNamesList)
         {
-            if (roomName == roomInfo.Name || roomName == string.Empty)
-                roomNameExist = true;
+            if (roomName == name || roomName == string.Empty)
+            {
+                createRoomButton.interactable = false;
+                joinRoomButton.interactable = true;
+            }
             else
-                roomNameExist = false;
+            {
+                createRoomButton.interactable = true;
+                joinRoomButton.interactable = false;
+            }
         }
-        
-        return roomNameExist;
     }
 
     public void LeaveRoom()
@@ -95,11 +102,16 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
         leaveRoomButton.interactable = false;
     }
 
+    public override void OnJoinedLobby()
+    {
+        base.OnJoinedLobby();
+    }
+
     public override void OnCreatedRoom()
     {
         base.OnCreatedRoom();
         Debug.Log("We are in a room!");
-        
+        Debug.Log(PhotonNetwork.CloudRegion);
     }
 
     public override void OnJoinedRoom()
@@ -165,6 +177,7 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
         isConnectedToRoomDebugTextUI.text = NO_STRING;
         currentRoomNameDebugTextUI.text = string.Empty;
         createRoomButton.interactable = false;
+        joinRoomButton.interactable = false;
         currentRoomPlayersCountTextUI.text = string.Format(CURRENT_ROOM_PLAYERS_PATTERN, 0, 0);
         leaveRoomButton.interactable = false;
         startGameButton.interactable = false;
@@ -177,9 +190,11 @@ public class MultiplayerManager : MonoBehaviourPunCallbacks
         serverDebugTextUI.text = PhotonNetwork.NetworkClientState.ToString();
 
         if (nicknameInputField.text == string.Empty)
-            connectToRoomButton.interactable = false;
+            connectToLobbyButton.interactable = false;
         else
-            connectToRoomButton.interactable = true;
+            connectToLobbyButton.interactable = true;
+
+        CheckRoomName(roomNameInputField.text);
     }
 
     private void RefreshCurrentRoomInfoUI()
